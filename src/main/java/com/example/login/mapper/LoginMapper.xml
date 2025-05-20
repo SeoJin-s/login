@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.login.mapper.LoginMapper">
+
+  <!-- 1. 로그인 이력 저장 -->
+  <insert id="insertLoginHistory">
+    INSERT INTO login_history (id, logindate)
+    VALUES (#{id}, NOW())
+  </insert>
+
+  <!-- 2. 1년 이상 미접속한 회원 ID 조회 -->
+  <select id="selectDormantIds" resultType="string">
+    SELECT id
+    FROM login_history
+    GROUP BY id
+    HAVING MAX(logindate) &lt; DATE_SUB(NOW(), INTERVAL 1 YEAR)
+  </select>
+
+  <!-- 3. 휴면 상태로 전환 -->
+  <update id="updateMemberToDormant">
+    UPDATE member
+    SET active = 'OFF'
+    WHERE id IN (
+      SELECT id
+      FROM login_history
+      GROUP BY id
+      HAVING MAX(logindate) &lt; DATE_SUB(NOW(), INTERVAL 1 YEAR)
+    )
+  </update>
+
+  <!-- 4. 전체 회원 조회 -->
+  <select id="selectAllMember" resultType="com.example.login.dto.MemberDto">
+    SELECT id, pw, email, active FROM member
+  </select>
+  
+  <!-- 5. 메일 전송 -->
+  <select id="selectEmailById" resultType="string">
+    SELECT email FROM member WHERE id = #{id}
+  </select>
+  
+  <!-- 6. 휴면 해제 -->
+  <update id="updateActiveToOn">
+    UPDATE member
+    SET active = 'ON'
+    WHERE id = #{id} AND active = 'OFF'
+  </update>
+	<!-- 페이징 -->
+<select id="selectMemberListByPage" resultType="com.example.login.dto.MemberDto">
+  SELECT id, email, active
+  FROM member
+  LIMIT #{rowPerPage} OFFSET #{beginRow}
+</select>
+
+<select id="selectMemberCount" resultType="int">
+  SELECT COUNT(*) FROM member
+</select>
+
+<!--  -->
+<update id="toggleMemberActive">
+  UPDATE member
+  SET active = CASE
+    WHEN active = 'ON' THEN 'OFF'
+    WHEN active = 'OFF' THEN 'ON'
+    ELSE 'ON'
+  END
+  WHERE id = #{id}
+</update>
+
+<update id="updateNewPwAfterMail">
+  UPDATE member
+  SET pw = #{pw}
+  WHERE id = #{id}
+</update>
+
+<select id="selectMemberOne" resultType="com.example.login.dto.MemberDto">
+  SELECT id, email, pw, active
+  FROM member
+  WHERE id = #{id}
+</select>
+</mapper>
