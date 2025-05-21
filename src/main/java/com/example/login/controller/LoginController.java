@@ -151,4 +151,60 @@ public class LoginController {
 	    redirect.addFlashAttribute("msg", "비밀번호가 성공적으로 변경되었습니다.");
 	    return "redirect:/loginForm";
 	}
+	
+	//비밀번호 변경
+	@GetMapping("/changePwForm")
+	public String changePwForm(@RequestParam(required = false) String id,
+	                           HttpSession session,
+	                           Model model) {
+	    // 1. id가 null이면 세션에서 로그인한 ID 꺼내기
+	    if (id == null) {
+	        MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
+	        if (loginMember != null) {
+	            id = loginMember.getId();
+	        } else {
+	            model.addAttribute("errMsg", "로그인이 필요합니다.");
+	            return "loginForm"; // 로그인 페이지로 리디렉션 or 에러 처리
+	        }
+	    }
+
+	    // 2. JSP에서 사용하도록 memberId 전달
+	    model.addAttribute("memberId", id);
+	    return "changePwForm";
+	}
+	
+	//
+	@PostMapping("/changePw")
+	public String changePw(
+			@RequestParam String id
+			, @RequestParam String currentPw
+			, @RequestParam String newPw
+			, RedirectAttributes redirect) {
+		
+		MemberDto member = loginService.selectMemberOne(id);
+		
+	    if (member == null) {
+	        redirect.addFlashAttribute("msg", "회원 정보를 찾을 수 없습니다.");
+	        return "redirect:/changePwForm?id=" + id;
+	    }
+
+	    if (!member.getPw().equals(currentPw)) {
+	        redirect.addFlashAttribute("msg", "현재 비밀번호가 일치하지 않습니다.");
+	        return "redirect:/changePwForm?id=" + id;
+	    }
+
+	    if (loginService.isUsedPwBefore(id, newPw)) {
+	        redirect.addFlashAttribute("msg", "이전에 사용한 비밀번호입니다.");
+	        return "redirect:/changePwForm?id=" + id;
+	    }
+
+	    loginService.updateNewPwAfterMail(id, newPw);
+	    loginService.addPwHistory(id, newPw);
+
+	    redirect.addFlashAttribute("msg", "비밀번호가 변경되었습니다.");
+	    return "redirect:/loginForm";
+	}
+			
+	
+	
 }

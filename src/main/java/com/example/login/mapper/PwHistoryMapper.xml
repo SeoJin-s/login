@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.login.mapper.PwHistoryMapper">
+	
+	<!-- 1.사용한 비밀번호 확인 -->
+		<select id="countSamePw" resultType="int">
+			select count(*)
+			from pw_history
+			where id = #{id} and pw = #{pw} <!-- 자바에서 넘긴 id,pw 파라미터값 바인딩 -->
+		</select>
+	
+	<!-- 2. 변경된 비밀번호 이력 추가 -->
+		<insert id="insertPwHistory">
+		INSERT INTO pw_history (id, pw, change_date)
+		VALUES (#{id}, #{pw}, NOW())
+		</insert>				<!-- values (?, ?) 이렇게 썼다가 틀림 -->
+	
+	
+	<!-- 3.전체 조회 중복 x-->
+		<select id ="getAllUserIds" resultType="String">
+		 	select distinct id
+		 	from pw_history
+		</select>
+	
+	
+	<!-- 4.매월1일 0시0분0초에 하나의 아이디당 최근 변경이력 5개만 남기고 삭제 
+	<delete id="deleteOldPwHistory">
+	  DELETE pw
+	  FROM pw_history pw
+	  JOIN (
+	    SELECT no
+	    FROM (
+	      SELECT no,
+	             ROW_NUMBER() OVER(PARTITION BY id ORDER BY change_date DESC) AS rn
+	      FROM pw_history
+	      WHERE id = #{id}
+	    ) ranked
+	    WHERE rn > 5
+	  ) AS to_delete
+	  ON pw.no = to_delete.no
+	</delete>
+	-->
+	<!-- 비밀번호 이력 개수 -->
+	<select id="countPwHistoryById" resultType="int">
+	  SELECT COUNT(*) FROM pw_history WHERE id = #{id}
+	</select>
+	
+	<!-- 가장 오래된 1개 삭제 -->
+	<delete id="deleteOldestPwHistory">
+	  DELETE pw
+	  FROM pw_history pw
+	  JOIN (
+	    SELECT no FROM pw_history
+	    WHERE id = #{id}
+	    ORDER BY change_date ASC
+	    LIMIT 1
+	  ) oldest
+	  ON pw.no = oldest.no
+	</delete>
+	
+</mapper>

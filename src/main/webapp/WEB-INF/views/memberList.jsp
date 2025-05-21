@@ -23,7 +23,20 @@
 </head>
 <body>
 	<h1>회원목록</h1>
-	
+	  <!-- ✅ 비밀번호 변경 버튼 (회원 목록 위에 하나만 고정됨) -->
+		<a href="changePwForm"
+		   style="display: inline-block;
+		          margin-bottom: 10px;
+		          padding: 8px 14px;
+		          font-size: 0.85rem;
+		          background-color: #e7f1ff;
+		          border: 1px solid #91caff;
+		          color: #0d6efd;
+		          border-radius: 6px;
+		          font-weight: 600;
+		          text-decoration: none;">
+		  비밀번호 변경
+		</a>
 	<table>
 		<thead>
   <tr>
