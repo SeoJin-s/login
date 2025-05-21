@@ -161,6 +161,7 @@ public class LoginServiceImpl implements LoginService {
     	return count > 0;
     }
     
+   /*
     @Override
     public void addPwHistory(String id, String newPw) {
         // 1. 새 비밀번호 이력 추가
@@ -174,5 +175,16 @@ public class LoginServiceImpl implements LoginService {
             int deleted = pwHistoryMapper.deleteOldestPwHistory(id);
             log.info("이력 정리: ID {} → 가장 오래된 {}건 삭제", id, deleted);
         }
+    }
+    */
+    
+    @Override
+    public void addPwHistory(String id, String newPw) {
+    	 // 1. 새 비밀번호 이력 추가
+        pwHistoryMapper.insertPwHistory(new PwHistoryDto(id, newPw));
+
+        // 2. 5개 초과 이력 삭제
+        int deleted = pwHistoryMapper.deletePwOverLimit(id);
+        log.info("비밀번호 이력 정리 완료 → ID: {}, 삭제된 이력 수: {}", id, deleted);	// 콘솔에 출력
     }
 }

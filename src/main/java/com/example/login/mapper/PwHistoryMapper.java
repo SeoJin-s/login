@@ -21,7 +21,10 @@ public interface PwHistoryMapper {
 	
 	// 하나의 아이디당 최근 변경이력 5개만 남기고 삭제
 	int deleteOldPwHistory(@Param("id") String id);
-	
+	// 비밀번호 개수 , 가장오래된거 삭제 지금 사용 x
 	int countPwHistoryById(@Param("id") String id);
 	int deleteOldestPwHistory(@Param("id") String id);
+	
+	// 비밀번호 이력 5개 초과시 오래된 기록 삭제
+	int deletePwOverLimit(@Param("id") String id);
 }

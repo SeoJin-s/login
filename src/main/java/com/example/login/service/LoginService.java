@@ -30,7 +30,7 @@ public interface LoginService {
 	// 로그인
 	MemberDto login(String memberId, String memberPw);
 
-	// 🔥 추가 기능
+	// 추가 기능
 	boolean isUsedPwBefore(String id, String newPw);
 	void addPwHistory(String id, String newPw);
 }

@@ -23,7 +23,7 @@
 		</select>
 	
 	
-	<!-- 4.매월1일 0시0분0초에 하나의 아이디당 최근 변경이력 5개만 남기고 삭제 
+	<!-- 4.매월1일 0시0분0초에 하나의 아이디당 최근 변경이력 5개만 남기고 삭제 사용 x
 	<delete id="deleteOldPwHistory">
 	  DELETE pw
 	  FROM pw_history pw
@@ -40,12 +40,14 @@
 	  ON pw.no = to_delete.no
 	</delete>
 	-->
-	<!-- 비밀번호 이력 개수 -->
+	
+	<!-- 비밀번호 이력 개수 사용 x
 	<select id="countPwHistoryById" resultType="int">
 	  SELECT COUNT(*) FROM pw_history WHERE id = #{id}
 	</select>
+	-->
 	
-	<!-- 가장 오래된 1개 삭제 -->
+	<!-- 가장 오래된 1개 삭제 사용 x 
 	<delete id="deleteOldestPwHistory">
 	  DELETE pw
 	  FROM pw_history pw
@@ -57,5 +59,23 @@
 	  ) oldest
 	  ON pw.no = oldest.no
 	</delete>
+	-->
 	
+	
+	<!-- 비밀번호 이력 5개 초과 시, 오래된 기록 삭제하여 최신 5개만 유지 -->
+	<delete id="deletePwOverLimit">
+	  DELETE pw
+	  FROM pw_history pw
+	  JOIN (
+	    SELECT no
+	    FROM (
+	      SELECT no,
+	             ROW_NUMBER() OVER (PARTITION BY id ORDER BY change_date DESC) AS rn
+	      FROM pw_history
+	      WHERE id = #{id}
+	    ) ranked
+	    WHERE rn > 5
+	  ) to_delete
+	  ON pw.no = to_delete.no
+	</delete>
 </mapper>
